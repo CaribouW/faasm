@@ -136,3 +136,6 @@ callgrind.*
 
 # Flamegraph
 *.svg
+scripts/
+.idea/
+cmake-build-debug
