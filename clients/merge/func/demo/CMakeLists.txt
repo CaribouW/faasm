@@ -11,15 +11,30 @@ function(demo_func_c exec_name dir_path)
 endfunction(demo_func_c)
 
 demo_func(heap heap.cpp)
+demo_func(tick tick.cpp)
 
-# 23/09/2020 - removing simd
-# WASM-only functions
+
+# For Cpp-python embeddings
 if (CMAKE_SYSTEM_NAME STREQUAL "Wasm")
-#    demo_func(emscripten_check emscripten_check.cpp)
-#    target_link_libraries(emscripten_check emscripten)
-    # TODO - fix BLAS check function
-    # include_directories(/usr/local/faasm/llvm-sysroot/include/clapack)
-    # demo_func_c(blas_check blas_check.c)
-    # target_link_libraries(blas_check ${FAASM_BLAS_LIBS})
-endif()
+    set(PYTHON_LIBRARIES "dummy/libpython3.8.a")
+    set(PYTHON_INCLUDE_DIRS dummy/python3.8) # TODO: Compile CPython target
+else ()
+    find_package(Python REQUIRED Development)
+endif ()
 
+
+add_executable(py_func py_func.cpp)
+
+if (CMAKE_SYSTEM_NAME STREQUAL "Wasm")
+    #    set_target_properties(py_func PROPERTIES LINK_FLAGS " \
+    #    -s WASM=1 \
+    #    -s TOTAL_MEMORY=1GB \
+    #    -s GLOBAL_BASE=0 \
+    #    -s STACK_SIZE=4MB \
+    #    -s EXIT_RUNTIME=1 \
+    #")
+    target_link_libraries(py_func ${PYTHON_LIBRARIES})
+    target_include_directories(py_func PUBLIC ${PYTHON_INCLUDE_DIRS})
+else ()
+    target_link_libraries(py_func PRIVATE Python::Python)
+endif ()
